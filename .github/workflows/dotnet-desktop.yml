@@ -1,0 +1,43 @@
+name: Build WPF App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Publish
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.0' # hoặc version bạn đang dùng
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build the solution
+      run: dotnet build --configuration Release
+
+    - name: Publish WPF app
+      run: |
+        dotnet publish WpfMvvmCustomerApp/WpfMvvmCustomerApp.csproj`
+          --configuration Release `
+          --output ./publish `
+          -p:PublishSingleFile=true `
+          -p:SelfContained=true `
+          -p:RuntimeIdentifier=win-x64
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: WPF-App
+        path: ./publish
