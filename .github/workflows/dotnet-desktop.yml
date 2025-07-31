@@ -42,3 +42,5 @@ jobs:
       with:
         name: WPF-App
         path: ./publish
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
