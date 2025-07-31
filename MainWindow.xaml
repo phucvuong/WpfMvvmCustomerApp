@@ -1,0 +1,25 @@
+﻿
+<Window x:Class="WpfMvvmCustomerApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:WpfMvvmCustomerApp.ViewModels"
+       
+        Title="MainWindow" Height="300" Width="300">
+
+    <Window.DataContext>
+        <vm:CustomerViewModel />
+    </Window.DataContext>
+    <StackPanel Margin="10">
+        <TextBox  Name="CustomerNameTextBox"  AutomationProperties.AutomationId="CustomerNameTextBox" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Name="CustomerAgeTextBox" AutomationProperties.AutomationId="CustomerAgeTextBox" Text="{Binding Age, UpdateSourceTrigger=PropertyChanged}" />
+        <StackPanel Orientation="Horizontal">
+            <Button Name="AddButton"  AutomationProperties.AutomationId="AddButton"  Content="Add" Command="{Binding AddCommand}" Width="80" Margin="2"/>
+            <Button Name="UpdateButton" Content="Update"  AutomationProperties.AutomationId="UpdateButton" Command="{Binding UpdateCommand}" Width="80" Margin="2"/>
+            <Button Name="DeleteButton" Content="Delete"  AutomationProperties.AutomationId="DeleteButton" Command="{Binding DeleteCommand}" Width="80" Margin="2"/>
+        </StackPanel>
+        <Button Name="SearchButton"  AutomationProperties.AutomationId="SearchButton"  Content="Search" Command="{Binding SearchCommand}" Width="80" Margin="2"/>
+        <DataGrid x:Name="CustomerDataGrid" ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" AutoGenerateColumns="True" Height="200"/>
+    </StackPanel>
+
+
+</Window>
