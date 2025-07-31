@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write  # Cho phép push tag & tạo release
 
 jobs:
   build:
@@ -16,50 +16,62 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.203' # hoặc version bạn đang dùng
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.203'
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build the solution
-      run: dotnet build --configuration Release
+      - name: Build the solution
+        run: dotnet build --configuration Release
 
-    - name: Publish WPF app
-      shell: pwsh
-      run: |
-       dotnet publish WpfMvvmCustomerApp.csproj `
-        --configuration Release `
-        --output ./publish `
-        -p:PublishSingleFile=true `
-        -p:SelfContained=true `
-        -p:RuntimeIdentifier=win-x64
+      - name: Publish WPF app
+        run: >
+          dotnet publish ./WpfMvvmCustomerApp/WpfMvvmCustomerApp.csproj
+          --configuration Release
+          --output ./publish
+          -p:PublishSingleFile=true
+          -p:SelfContained=true
+          -p:RuntimeIdentifier=win-x64
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: WPF-App
-        path: ./publish
+      # Nén file publish thành ZIP
+      - name: Compress App
+        run: |
+          cd publish
+          powershell Compress-Archive * ../WpfApp-${{ github.run_number }}.zip
 
-    - name: Bump version and create tag
-      run: |
-       git config user.name github-actions
-       git config user.email github-actions@github.com
-       git tag v1.0.${{ github.run_number }}
-       git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-       git push origin v1.0.${{ github.run_number }}
-        
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-       tag_name: v1.0.${{ github.run_number }}
-       name: "Release v1.0.${{ github.run_number }}"
-       body: "Auto-generated release"
+      # Upload artifact để debug hoặc download trực tiếp từ Actions
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WPF-App
+          path: ./WpfApp-${{ github.run_number }}.zip
 
+      # Cấu hình Git để push tag
+      - name: Configure Git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+      # Tạo tag version mới
+      - name: Bump version and create tag
+        run: |
+          git tag v1.0.${{ github.run_number }}
+          git push origin v1.0.${{ github.run_number }}
+
+      # Tạo GitHub Release và đính kèm file ZIP
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "Release v1.0.${{ github.run_number }}"
+          body: "Auto-generated release"
+          files: ./WpfApp-${{ github.run_number }}.zip
