@@ -34,7 +34,7 @@ jobs:
 
       - name: Publish WPF app
         run: >
-          dotnet publish ./WpfMvvmCustomerApp/WpfMvvmCustomerApp.csproj
+          dotnet publish WpfMvvmCustomerApp.csproj
           --configuration Release
           --output ./publish
           -p:PublishSingleFile=true
